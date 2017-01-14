@@ -1,10 +1,10 @@
 module Main exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing ( onClick )
+import Html.Events exposing (onClick)
 
 -- component import example
-import Components.Hello exposing ( hello )
+import Components.ShowTweets exposing (showTweets)
 
 
 -- APP
@@ -21,13 +21,13 @@ model = 0
 
 
 -- UPDATE
-type Msg = NoOp | Increment
+type Msg = NoOp | Toggle
 
 update : Msg -> Model -> Model
 update msg model =
   case msg of
     NoOp -> model
-    Increment -> model + 1
+    Toggle -> model + 1
 
 
 -- VIEW
@@ -35,29 +35,16 @@ update msg model =
 -- CSS can be applied via class names or inline style attrib
 view : Model -> Html Msg
 view model =
-  div [ class "container", style [("margin-top", "30px"), ( "text-align", "center" )] ][    -- inline CSS (literal)
+  div [ class "container", style [("margin-top", "30px"), ( "text-align", "center" )] ][
     div [ class "row" ][
       div [ class "col-xs-12" ][
         div [ class "jumbotron" ][
-          img [ src "static/img/elm_logo.png", style styles.img ] []                        -- inline CSS (via var)
-          , hello model                                                                     -- ext 'hello' component (takes 'model' as arg)
-          , p [] [ text ( "Elm Webpack Starter" ) ]
-          , button [ class "btn btn-primary btn-lg", onClick Increment ] [                  -- click handler
-            span[ class "glyphicon glyphicon-star" ][]                                      -- glyphicon
-            , span[][ text "Yes!" ]
+          button [ class "btn btn-primary btn-lg", onClick Toggle ] [
+            span[ class "glyphicon glyphicon-star" ][]
+            , span[][ text "Toggle" ]
           ]
+          ,showTweets ["tweet 1", "tweet 2"]
         ]
       ]
     ]
   ]
-
-
--- CSS STYLES
-styles : { img : List ( String, String ) }
-styles =
-  {
-    img =
-      [ ( "width", "33%" )
-      , ( "border", "4px solid #337AB7")
-      ]
-  }
