@@ -1,53 +1,41 @@
 module Main exposing (..)
 
-import Array
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (onClick)
+import Html exposing(..)
+import Components.Tweets.TwitterContainer exposing(..)
 
-import Components.Tweets.TwitterContainer exposing (loadTweets)
+-- PROGRAM
 
--- APP
-main : Program Never Model Msg
-main =
-  Html.beginnerProgram { model = model, view = view, update = update }
+main : Program Never AppModel Msg
+main = 
+    Html.program 
+        { init = init 
+        , update = update
+        , subscriptions = \_ -> Sub.none
+        , view = view
+        }
 
+type alias AppModel = {
+  twitterContainerModel : Components.Tweets.TwitterContainer.Model
+}
 
--- MODEL
-type alias Model = Int
-
-model : Model
-model = 0
-
-usernames : Array.Array String
-usernames = Array.fromList ["trump", "other"]
+init : (AppModel, Cmd Msg)
+init =
+    ( { twitterContainerModel = Components.Tweets.TwitterContainer.model}, Cmd.none )
 
 -- UPDATE
-type Msg = NoOp | Toggle
+type Msg = TwitterMsg Components.Tweets.TwitterContainer.Msg
 
-update : Msg -> Model -> Model
+update : Msg -> AppModel -> (AppModel, Cmd Msg)
 update msg model =
   case msg of
-    NoOp -> model
-    Toggle -> (model + 1) % Array.length usernames
+    TwitterMsg subMsg ->
+      let
+          twitterContainerModel =
+              Components.Tweets.TwitterContainer.update subMsg model.twitterContainerModel
+      in
+          ( { model | twitterContainerModel = twitterContainerModel }, Cmd.map TwitterMsg Cmd.none )
 
 -- VIEW
--- Html is defined as: elem [ attribs ][ children ]
--- CSS can be applied via class names or inline style attrib
-view : Model -> Html Msg
+view : AppModel -> Html Msg
 view model =
-  div [ class "container", style [("margin-top", "30px"), ( "text-align", "center" )] ][
-    div [ class "row" ][
-      div [ class "col-xs-12" ][
-        div [ class "jumbotron" ][
-          button [ class "btn btn-primary btn-lg", onClick Toggle ] [
-            span[ class "glyphicon glyphicon-star" ][]
-            , span[][ text "Toggle" ]
-          ]
-          ,(Array.get model usernames)
-            |> Maybe.map loadTweets
-            |> Maybe.withDefault (div [] [text("Nothing here to show")])
-        ]
-      ]
-    ]
-  ]
+  Html.map TwitterMsg (Components.Tweets.TwitterContainer.view model.twitterContainerModel)

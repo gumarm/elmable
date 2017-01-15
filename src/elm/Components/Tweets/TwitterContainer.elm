@@ -1,38 +1,52 @@
 module Components.Tweets.TwitterContainer exposing (..)
 
+import Array
 import Maybe
 import Html exposing (..)
+import Html.Events exposing (..)
 import Http
 import Json.Decode as Decode
 
 import Components.Tweets.RenderTweets exposing (renderTweets)
 
-type Msg = ReceiveTweets (Result Http.Error String)
+usernames : Array.Array String
+usernames = Array.fromList ["trump", "other"]
+
+type Msg = Toggle
+  | ReceiveTweets (Result Http.Error String)
 
 type alias Model = {
-  user: String,
+  index: Int,
   tweets: Maybe (List String)
 }
 
 model : Model
-model = Model "trump" Nothing
+model = Model 0 Nothing
 
+-- UPDATE
 update : Msg -> Model -> Model
 update msg model = 
   case msg of
+    Toggle ->
+      Model ((model.index + 1) % (Array.length usernames)) Nothing
     ReceiveTweets (Ok data) ->
-      Model model.user (Just (extractTweets data))
+      Model model.index (Just (extractTweets data))
     ReceiveTweets (Err _) ->
-      Model model.user Nothing
+      Model model.index Nothing
 
 
-view : Model -> Html a
+-- VIEW
+view : Model -> Html Msg
 view model = 
-  div [] [text(model.user), div [] [
+  div []
+  [ button [onClick Toggle] [text ("Toggle")],
+  div [] [text(getUsername model), div []
+    [
     model.tweets
       |> Maybe.map renderTweets
       |> Maybe.withDefault (div [] [text("No tweets!")])
     ]]
+  ]
 
 loadTweets : String -> Cmd Msg
 loadTweets user =
@@ -49,3 +63,8 @@ decodeGifUrl =
 extractTweets : String -> List String
 extractTweets data = 
   [data]
+
+getUsername : Model -> String
+getUsername model = 
+  Array.get model.index usernames
+    |> Maybe.withDefault "trump"
