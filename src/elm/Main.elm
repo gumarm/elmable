@@ -1,14 +1,14 @@
 module Main exposing (..)
+
+import Array
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 
--- component import example
-import Components.ShowTweets exposing (showTweets)
-
+import Components.Tweets.TwitterContainer exposing (loadTweets)
 
 -- APP
-main : Program Never Int Msg
+main : Program Never Model Msg
 main =
   Html.beginnerProgram { model = model, view = view, update = update }
 
@@ -16,9 +16,11 @@ main =
 -- MODEL
 type alias Model = Int
 
-model : number
+model : Model
 model = 0
 
+usernames : Array.Array String
+usernames = Array.fromList ["trump", "other"]
 
 -- UPDATE
 type Msg = NoOp | Toggle
@@ -27,8 +29,7 @@ update : Msg -> Model -> Model
 update msg model =
   case msg of
     NoOp -> model
-    Toggle -> model + 1
-
+    Toggle -> (model + 1) % Array.length usernames
 
 -- VIEW
 -- Html is defined as: elem [ attribs ][ children ]
@@ -43,7 +44,9 @@ view model =
             span[ class "glyphicon glyphicon-star" ][]
             , span[][ text "Toggle" ]
           ]
-          ,showTweets ["tweet 1", "tweet 2"]
+          ,(Array.get model usernames)
+            |> Maybe.map loadTweets
+            |> Maybe.withDefault (div [] [text("Nothing here to show")])
         ]
       ]
     ]

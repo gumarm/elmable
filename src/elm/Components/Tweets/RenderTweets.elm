@@ -1,9 +1,8 @@
-module Components.ShowTweets exposing (..)
+module Components.Tweets.RenderTweets exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import List
-import Maybe
 
 type alias Tweet = 
   String
@@ -16,8 +15,8 @@ renderTweet tweet =
   div [class "tweet"][text (tweet)]
 
 -- Tweets component
-showTweets : Tweets -> Html a
-showTweets tweets =
+renderTweets : Tweets -> Html a
+renderTweets tweets =
   div [class "tweets"]
   (tweets
   |> List.map renderTweet)
