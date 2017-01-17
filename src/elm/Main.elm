@@ -6,12 +6,12 @@ import Html.Events exposing (..)
 import Html.Attributes exposing (..)
 import Http
 import Regex exposing (..)
+import Time
 
 import Utils.List exposing (getByIndex)
 import Components.Tweets.RenderTweets exposing (renderTweets)
 
-type Msg = Toggle
-  | ReceiveTweets (Result Http.Error String)
+type Msg = Toggle | ReceiveTweets (Result Http.Error String) | Refresh Time.Time
 
 type alias Model = {
   userIndex: Int,
@@ -26,7 +26,7 @@ main =
   { init = init 0
     , view = view
     , update = update
-    , subscriptions = \_ -> Sub.none
+    , subscriptions = \_ -> Time.every (10 * Time.second) Refresh
   }
 
 init: Int -> (Model, Cmd Msg)
@@ -49,6 +49,8 @@ update msg model =
         newIndex = ((model.userIndex + 1) % (List.length usernames))
       in
       (Model newIndex True Nothing, loadTweets (getUsername newIndex))
+    Refresh _ ->
+      (Model model.userIndex True Nothing, loadTweets (getUsername model.userIndex))
     ReceiveTweets (Ok data) ->
       (Model model.userIndex False (Just (extractTweets data)), Cmd.none)
     ReceiveTweets (Err _) ->
