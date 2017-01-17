@@ -1,0 +1,33 @@
+// Some best-practice CSS that's useful for most apps
+// Just remove them if they're not what you want
+html {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
+body {
+    background-color: #f5f8fa;
+}
+
+div.narrow {
+  max-width: 35em !important;
+  margin: 0 auto;
+  padding: 1em 0;
+}
+
+.funbackground{
+  transition: background-color 500ms ease-in;
+  padding: 2em;
+}
