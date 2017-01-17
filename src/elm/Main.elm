@@ -1,6 +1,5 @@
 module Main exposing (..)
 
-import Array
 import Maybe
 import Html exposing (..)
 import Html.Events exposing (..)
@@ -8,6 +7,7 @@ import Html.Attributes exposing (..)
 import Http
 import Regex exposing (..)
 
+import Utils.List exposing (getByIndex)
 import Components.Tweets.RenderTweets exposing (renderTweets)
 
 type Msg = Toggle
@@ -15,11 +15,11 @@ type Msg = Toggle
 
 type alias Model = {
   userIndex: Int,
+  isLoading: Bool,
   tweets: Maybe (List String)
 }
 
 -- PROGRAM
-
 main : Program Never Model Msg
 main =
   Html.program
@@ -31,11 +31,14 @@ main =
 
 init: Int -> (Model, Cmd Msg)
 init index = 
-  (Model index Nothing,
+  (Model index True Nothing,
   loadTweets (getUsername index))
 
 usernames : List String
 usernames = ["realDonaldTrump", "HillaryClinton", "barackobama", "jfdoube"]
+
+colors: List String
+colors = ["#e1f7d5", "#ffbdbd", "#c9c9ff", "#f1cbff"]
 
 -- UPDATE
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -45,20 +48,19 @@ update msg model =
       let
         newIndex = ((model.userIndex + 1) % (List.length usernames))
       in
-      (Model newIndex Nothing, loadTweets (getUsername newIndex))
+      (Model newIndex True Nothing, loadTweets (getUsername newIndex))
     ReceiveTweets (Ok data) ->
-      (Model model.userIndex (Just (extractTweets data)), Cmd.none)
+      (Model model.userIndex False (Just (extractTweets data)), Cmd.none)
     ReceiveTweets (Err _) ->
-      (Model model.userIndex Nothing, Cmd.none)
+      (Model model.userIndex False Nothing, Cmd.none)
 
--- [ button [onClick Toggle] [text ("Toggle")],
 -- VIEW
 view : Model -> Html Msg
 view model = 
-  div [class "funBackground"] [
+  div [class "fun-background", style [("backgroundColor", getByIndex colors model.userIndex "#FFF")]] [
     div [class "narrow"] [
     div [class "ui three item menu"] [
-      a [class "item", onClick Toggle][text("Toggle")]
+      a [class "item", onClick Toggle][text "Toggle"]
     ],
     section [] [
       h1 [class "ui horizontal divider header"][
@@ -69,11 +71,17 @@ view model =
         [
         model.tweets
           |> Maybe.map renderTweets
-          |> Maybe.withDefault (div [class "ui ignored info message"] [text("No tweets!")])
+          |> Maybe.withDefault (getDefaultState model)
         ]]
       ]
     ]
   ]
+
+getDefaultState : Model -> Html a
+getDefaultState model = 
+  case model.isLoading of
+    True -> div [class "ui active centered inline loader"] []
+    False -> div [class "ui ignored info message"] [text "No tweets!"]
 
 loadTweets : String -> Cmd Msg
 loadTweets user =
@@ -93,8 +101,3 @@ extractTweets data =
 getUsername : Int -> String
 getUsername index = 
   getByIndex usernames index "realDonaldTrump"
-
-getByIndex : List a -> Int -> a -> a
-getByIndex list index default = 
-  Array.get index (Array.fromList list)
-    |> Maybe.withDefault default

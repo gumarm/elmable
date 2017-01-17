@@ -27,7 +27,8 @@ div.narrow {
   padding: 1em 0;
 }
 
-.funbackground{
+.fun-background{
   transition: background-color 500ms ease-in;
   padding: 2em;
+  min-height: 100vh;
 }
